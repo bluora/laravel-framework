@@ -467,11 +467,11 @@ trait HasAttributes
 
         $castType = $this->getCastType($key);
 
-        // If the cast type has a cast mutator, we will call that then return what
+        // If the cast type has a get cast mutator, we will call that then return what
         // it returns as the value, which is useful for transforming values on
         // retrieval from the model to a form that is more useful for usage.
-        if ($this->hasCastMutator($castType)) {
-            return $this->{'cast'.Str::studly($castType).'Value'}($value);
+        if ($this->hasGetCastMutator($castType)) {
+            return $this->{'get'.Str::studly($castType).'Cast'}($value);
         }
 
         switch ($castType) {
@@ -522,9 +522,9 @@ trait HasAttributes
      * @param  string  $key
      * @return bool
      */
-    public function hasCastMutator($key)
+    public function hasGetCastMutator($key)
     {
-        return method_exists($this, 'cast'.Str::studly($key).'Value');
+        return method_exists($this, 'get'.Str::studly($key).'Cast');
     }
 
     /**
@@ -536,6 +536,9 @@ trait HasAttributes
      */
     public function setAttribute($key, $value)
     {
+
+        $castType = $this->getCastType($key);
+
         // First we will check for the presence of a mutator for the set operation
         // which simply lets the developers tweak the attribute as it is set on
         // the model, such as "json_encoding" an listing of data for storage.
@@ -543,6 +546,14 @@ trait HasAttributes
             $method = 'set'.Str::studly($key).'Attribute';
 
             return $this->{$method}($value);
+        }
+
+        // If the cast type has a set cast mutator, we will call that then 
+        // allocate that new value against the given key.
+        elseif ($this->hasSetCastMutator($castType)) {
+            $this->attributes[$key] = $this->{'set'.Str::studly($castType).'Cast'}($value);
+
+            return $this;
         }
 
         // If an attribute is listed as a "date", we'll convert it from a DateTime
@@ -566,6 +577,17 @@ trait HasAttributes
         $this->attributes[$key] = $value;
 
         return $this;
+    }
+
+    /**
+     * Determine if a set cast mutator exists for an cast type.
+     *
+     * @param  string  $key
+     * @return bool
+     */
+    public function hasSetCastMutator($key)
+    {
+        return method_exists($this, 'set'.Str::studly($key).'Cast');
     }
 
     /**

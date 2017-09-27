@@ -1523,7 +1523,7 @@ class DatabaseEloquentModelTest extends TestCase
 
         $arr = $model->toArray();
 
-        $this->assertEquals('test1', $arr['customAttribute']);
+        $this->assertEquals('test21', $arr['customAttribute']);
     }
 
     public function testModelAttributeCastingPreservesNull()
@@ -2026,9 +2026,14 @@ class EloquentModelCastingStub extends Model
         return $this->attributes['jsonAttribute'];
     }
 
-    public function castCustomValue($value)
+    public function getCustomCast($value)
     {
         return $value.'1';
+    }
+
+    public function setCustomCast($value)
+    {
+        return $value.'2';
     }
 }
 
